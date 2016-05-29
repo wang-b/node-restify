@@ -100,22 +100,6 @@ server.on('NotFound', function(req, res, err, cb) {
 });
 ```
 
-### domains
-
-In 4.x, restify utilized domains by default. Any errors captured by the domain
-could be handled to via the `server.on('uncaughtException', ...` event.
-However, it was not immediately obvious that this behavior was happening by
-default, and many errors often went unhandled or unnoticed by end users.
-
-With domains being deprecated, we've opted to turn domains off by default. If
-you want to use domains, you can turn them back on via the
-`handleUncaughtExceptions` option when you create the server:
-
-```js
-var server = restify.createServer({
-    handleUncaughtExceptions: true
-});
-```
 
 ### CORS
 
@@ -132,7 +116,19 @@ it out the door!
 
 ### strict routing
 
-TBD
+Strict routing is now supported via the `strictRouting` option. This allows
+differentiation of routes with trailing slashes. The default value is `false`,
+which mimics the behavior in 4.x which is to strip trailing slashes.
+
+```js
+var server = restify.createServer({
+    strictRouting: true
+});
+// these two routes are distinct with strictRouting option
+server.get('/foo/', function(req, res, next) { });
+server.get('/foo', function(req, res, next) { });
+```
+
 
 ### res.sendRaw()
 
@@ -143,3 +139,53 @@ scenarios where you have preformatted content (pre-gzipped, pre-JSON
 stringified, etc.). `sendRaw` has the same signature as `send`.
 
 
+### Removal of undocumented APIs
+
+Previous versions of restify had some undocumented exports on the main object.
+These have been removed as of 5.x. These include:
+
+* `restify.CORS` - due to removal of CORS from core
+* `restify.httpDate` - undocumented
+* `restify.realizeUrl` - undocumented
+
+
+
+## Deprecations
+
+The following are still currently supported, but are on life support and may be
+removed in future versions. Usage of these features will cause restify to spit
+out deprecation warnings in the logs.
+
+
+### domains
+
+In 4.x, restify utilized domains by default. Any errors captured by the domain
+could be handled to via the `server.on('uncaughtException', ...)` event.
+However, it was not immediately obvious that this behavior was happening by
+default, and many errors often went unhandled or unnoticed by end users.
+
+With domains being deprecated, we've opted to turn domains off by default. If
+you want to use domains, you can turn them back on via the
+`handleUncaughtExceptions` option when you create the server:
+
+```js
+var server = restify.createServer({
+    handleUncaughtExceptions: true
+});
+```
+
+### next.ifError()
+
+The `next.ifError()` feature leveraged domains under the hood. This feature is
+also deprecated, and will only be available to you if the
+`handleUncaughtExceptions` flag is set to true.
+
+
+### next(routeName)
+
+In 4.x and previous versions, it was possible to jump to another route by
+calling `next()` with the name of the new route. This feature was a little
+wonky and had some limitations that made it difficult to work with. This
+feature will be deprecated as of 5.x, in favor or finding something that is a
+little more ergonomic and holistic in it's approach to internal route
+redirection.
