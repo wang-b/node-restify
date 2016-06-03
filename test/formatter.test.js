@@ -324,3 +324,29 @@ test('GH-937 should return 500 when no default formatter found ' +
         t.end();
     });
 });
+
+
+test('GH-1125: should JSON format regular errors', function (t) {
+
+    SERVER.get('/', function (req, res, next) {
+        res.send(new Error('boom'));
+        return next();
+    });
+
+
+    var myClient = restifyClients.createJSONClient({
+        url: 'http://127.0.0.1:' + PORT,
+        retry: false,
+        agent: false
+    });
+
+    myClient.get('/', function (err, req, res, data) {
+        t.ok(err);
+        t.ok(req);
+        t.ok(res);
+        t.equal(res.statusCode, 500);
+        t.equal(data.name, 'Error');
+        t.equal(data.message, 'Error: boom');
+        t.end();
+    });
+});
